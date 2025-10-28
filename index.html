@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>SMART HERITAGE HUB</title>
+<style>
+  :root{
+    --card-bg: rgba(255,255,255,0.12);
+    --glass: rgba(255,255,255,0.08);
+    --accent: rgba(255,255,255,0.22);
+  }
+
+  *{box-sizing:border-box;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;}
+  html,body{height:100%; margin:0;}
+  body{
+    display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+    padding:28px;
+    animation: bgchange 18s linear infinite;
+    color: #fff;
+    transition: background 1s ease;
+  }
+
+  @keyframes bgchange{
+    0%{background: linear-gradient(135deg,#ff6f61 0%, #ffb347 40%);}
+    25%{background: linear-gradient(135deg,#6a5acd 0%, #20b2aa 40%);}
+    50%{background: linear-gradient(135deg,#20b2aa 0%, #6a5acd 40%);}
+    75%{background: linear-gradient(135deg,#ffb347 0%, #ff6f61 40%);}
+    100%{background: linear-gradient(135deg,#ff6f61 0%, #ffb347 40%);}
+  }
+
+  header{width:100%; max-width:1100px; display:flex;align-items:center;justify-content:space-between; gap:12px; margin-bottom:18px}
+  h1{margin:0; font-size: clamp(20px, 3vw, 36px); letter-spacing:1px; text-shadow:0 6px 18px rgba(0,0,0,0.25)}
+  .sub{opacity:0.9; font-size:0.95rem}
+
+  main{width:100%; max-width:1100px; display:grid; grid-template-columns: 1fr 420px; gap:18px; align-items:start;}
+  /* left big area */
+  .panel{
+    background: var(--card-bg);
+    padding:18px;
+    border-radius:14px;
+    backdrop-filter: blur(6px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+  }
+
+  /* top buttons */
+  .actions{display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px}
+  .btn{
+    background:var(--accent); border:none; color:white; padding:12px 16px; border-radius:12px; cursor:pointer;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+    display:inline-flex; gap:8px; align-items:center; font-weight:600;
+  }
+  .btn.ghost{ background: transparent; border: 1px solid rgba(255,255,255,0.12);}
+
+  /* login / marketplace / sell forms */
+  .hidden{display:none;}
+  .center{display:flex; align-items:center; justify-content:center; flex-direction:column;}
+
+  .small{font-size:0.9rem; opacity:0.95}
+  input[type="text"], input[type="email"], input[type="password"], input[type="number"]{
+    width:100%; padding:10px 12px; border-radius:10px; border:none; margin-top:8px; margin-bottom:10px;
+    background:rgba(255,255,255,0.08); color:white;
+  }
+
+  label{display:block; font-size:0.9rem; margin-top:8px; color:#fff; opacity:0.95;}
+  .form-row{display:flex; gap:8px;}
+  .form-row > *{flex:1;}
+
+  /* marketplace list */
+  .items{display:grid; gap:12px; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); margin-top:12px;}
+  .item{
+    background: rgba(255,255,255,0.03); padding:12px; border-radius:10px; display:flex; gap:8px; align-items:center;
+  }
+  .thumb{width:84px; height:84px; border-radius:8px; background:#222; display:flex; align-items:center; justify-content:center; overflow:hidden;}
+  .thumb img{width:100%; height:100%; object-fit:cover;}
+  .meta{flex:1; text-align:left}
+  .meta h4{margin:0 0 4px 0; font-size:1rem}
+  .meta p{margin:0; font-size:0.9rem; opacity:0.95}
+  .meta .price{font-weight:700; margin-top:6px}
+
+  .right-col{display:flex; flex-direction:column; gap:12px;}
+  .card{padding:12px; border-radius:12px; background:rgba(0,0,0,0.12);}
+
+  footer{width:100%; max-width:1100px; margin-top:18px; color:#fff; opacity:0.95; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;}
+  .shortcut-grid{display:flex; gap:10px; flex-wrap:wrap;}
+  .shortcut{background:rgba(255,255,255,0.06); padding:8px 10px; border-radius:8px; display:inline-flex; gap:8px; align-items:center; text-decoration:none; color:white; font-weight:600;}
+
+  .note{color:#fff; font-size:0.85rem; opacity:0.9;}
+  .danger{color:#ffdddd; background:rgba(255,0,0,0.1); padding:8px; border-radius:8px}
+
+  /* small responsive */
+  @media (max-width:980px){
+    main{grid-template-columns: 1fr; }
+    .right-col{order:2}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Welcome to our SMART HERITAGE HUB</h1>
+    <div class="sub">Interactive demo marketplace — demo only. No real payments. Do not enter real bank/account info.</div>
+  </div>
+  <div style="display:flex; gap:8px; align-items:center;">
+    <button class="btn" id="open-gpt">🤖 GPT-5</button>
+    <button class="btn ghost" id="btn-logout" style="display:none">Logout</button>
+  </div>
+</header>
+
+<main>
+  <!-- LEFT: Search + Marketplace listing -->
+  <section class="panel" id="leftPanel">
+    <div class="actions">
+      <button class="btn" id="btn-clue">🔍 Search with Small Clue</button>
+      <button class="btn" id="btn-photo">🖼️ Search with Photo</button>
+
+      <button class="btn" id="btn-login">🔐 Login / Signup</button>
+      <button class="btn" id="btn-sell">➕ Sell an Item</button>
+    </div>
+
+    <!-- Login form -->
+    <div id="loginBox" class="card hidden">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <strong>Login / Sign up (demo)</strong>
+        <button class="btn ghost" id="closeLogin">Close</button>
+      </div>
+      <label>Email</label>
+      <input id="loginEmail" type="email" placeholder="you@example.com">
+      <label>Password</label>
+      <input id="loginPassword" type="password" placeholder="password">
+      <div style="display:flex; gap:8px; margin-top:8px;">
+        <button class="btn" id="btnDoLogin">Login / Signup</button>
+        <button class="btn ghost" id="btnGuest">Continue as Guest</button>
+      </div>
+      <p class="small" style="margin-top:10px">This is a local demo. Credentials are stored only in your browser (localStorage).</p>
+    </div>
+
+    <!-- Sell form -->
+    <div id="sellBox" class="card hidden">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <strong>Sell an Item</strong>
+        <button class="btn ghost" id="closeSell">Close</button>
+      </div>
+      <label>Item Name</label>
+      <input id="sellName" type="text" placeholder="Beautiful vase">
+      <label>Price (INR)</label>
+      <input id="sellPrice" type="number" min="0" placeholder="999">
+      <label>Account ID (demo only)</label>
+      <input id="sellAcc" type="text" placeholder="ACCT-12345 (do NOT use real bank details)">
+      <label>Image (optional)</label>
+      <input id="sellImage" type="file" accept="image/*">
+      <div id="preview" style="margin-top:8px;"></div>
+      <div style="display:flex; gap:8px; margin-top:8px;">
+        <button class="btn" id="btnPostItem">Post Item for Sale</button>
+      </div>
+    </div>
+
+    <!-- Marketplace / Items -->
+    <div style="margin-top:12px;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3 style="margin:0">Marketplace</h3>
+        <div class="small">Your local demo shop — items persist in your browser</div>
+      </div>
+
+      <div id="itemsList" class="items" style="margin-top:12px"></div>
+
+      <div style="margin-top:18px;">
+        <h4 style="margin:0">My Orders</h4>
+        <div id="ordersList" style="margin-top:8px;" class="small"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RIGHT: Account & shortcuts -->
+  <aside class="right-col">
+    <div class="card">
+      <strong>Account</strong>
+      <div id="accountInfo" style="margin-top:8px;">
+        <div class="small">Not logged in</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <strong>Shortcuts — Popular Shopping</strong>
+      <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
+        <a class="shortcut" href="https://www.amazon.in" target="_blank">Amazon</a>
+        <a class="shortcut" href="https://www.flipkart.com" target="_blank">Flipkart</a>
+        <a class="shortcut" href="https://www.myntra.com" target="_blank">Myntra</a>
+        <a class="shortcut" href="https://www.ebay.in" target="_blank">eBay</a>
+        <a class="shortcut" href="https://www.snapdeal.com" target="_blank">Snapdeal</a>
+      </div>
+      <div class="small" style="margin-top:10px; opacity:0.9">Click any shortcut to open the real shopping site in a new tab.</div>
+    </div>
+
+    <div class="card">
+      <strong>How this demo works</strong>
+      <p class="small" style="margin-top:6px">All items and orders are stored in your browser using <code>localStorage</code>. No servers, no payments. For safety, do <em>not</em> enter real bank credentials.</p>
+    </div>
+  </aside>
+</main>
+
+<footer>
+  <div class="note">Made for demo & learning — SMART HERITAGE HUB</div>
+  <div class="shortcut-grid">
+    <a class="shortcut" href="https://chat.openai.com/" target="_blank">Open ChatGPT</a>
+    <a class="shortcut" href="https://lens.google.com/" target="_blank">Google Lens</a>
+    <a class="shortcut" href="https://www.google.com/imghp" target="_blank">Google Images</a>
+  </div>
+</footer>
+
+<script>
+  /* -------------------------
+     Utility and persistence
+     ------------------------- */
+  const STORAGE_KEYS = {
+    USER: 'shub_user_demo_v1',
+    ITEMS: 'shub_items_demo_v1',
+    ORDERS: 'shub_orders_demo_v1'
+  };
+
+  function readStorage(key, fallback){
+    try{ const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch(e){ return fallback; }
+  }
+  function writeStorage(key, data){
+    try{ localStorage.setItem(key, JSON.stringify(data)); } catch(e){}
+  }
+
+  // default sample items if none exist
+  const defaultItems = [
+    { id: idStr(), name: 'Bronze Temple Bell', price: 599, img: '', seller:'Demo-Seller' },
+    { id: idStr(), name: 'Hand-painted Pot', price: 1299, img: '', seller:'Demo-Seller' }
+  ];
+
+  // generate id
+  function idStr(){ return 'i'+Math.random().toString(36).slice(2,10); }
+
+  /* -------------------------
+     App state & init
+     ------------------------- */
+  let user = readStorage(STORAGE_KEYS.USER, null); // {email}
+  let items = readStorage(STORAGE_KEYS.ITEMS, null);
+  if(!items) { items = defaultItems; writeStorage(STORAGE_KEYS.ITEMS, items); }
+  let orders = readStorage(STORAGE_KEYS.ORDERS, []);
+
+  // DOM references
+  const itemsList = document.getElementById('itemsList');
+  const ordersList = document.getElementById('ordersList');
+  const accountInfo = document.getElementById('accountInfo');
+
+  function renderAccount(){
+    if(user){
+      accountInfo.innerHTML = `<div><strong>${escapeHtml(user.email)}</strong></div><div class="small" style="margin-top:6px">Logged in (demo)</div>`;
+      document.getElementById('btn-logout').style.display = 'inline-flex';
+    } else {
+      accountInfo.innerHTML = `<div class="small">Not logged in</div>`;
+      document.getElementById('btn-logout').style.display = 'none';
+    }
+  }
+
+  function renderItems(){
+    itemsList.innerHTML = '';
+    if(!items || items.length === 0){
+      itemsList.innerHTML = '<div class="small">No items listed yet.</div>';
+      return;
+    }
+    items.forEach(it => {
+      const el = document.createElement('div'); el.className = 'item';
+      const thumb = document.createElement('div'); thumb.className = 'thumb';
+      if(it.img){
+        const im = document.createElement('img'); im.src = it.img; thumb.appendChild(im);
+      } else {
+        thumb.innerHTML = `<div style="padding:6px;color:rgba(255,255,255,0.6);font-size:0.9rem">No image</div>`;
+      }
+      const meta = document.createElement('div'); meta.className = 'meta';
+      meta.innerHTML = `<h4>${escapeHtml(it.name)}</h4>
+                        <p class="small">Seller: ${escapeHtml(it.seller || 'Unknown')}</p>
+                        <div class="price">₹${Number(it.price).toLocaleString()}</div>`;
+      const btnWrap = document.createElement('div');
+      const buyBtn = document.createElement('button'); buyBtn.className='btn'; buyBtn.textContent='Buy Now';
+      buyBtn.onclick = () => doBuy(it.id);
+      btnWrap.appendChild(buyBtn);
+      el.appendChild(thumb); el.appendChild(meta); el.appendChild(btnWrap);
+      itemsList.appendChild(el);
+    });
+  }
+
+  function renderOrders(){
+    if(!orders || orders.length === 0){ ordersList.innerHTML = '<div class="small">No orders yet.</div>'; return; }
+    ordersList.innerHTML = ''; 
+    orders.slice().reverse().forEach(o=>{
+      const d = document.createElement('div');
+      d.style.marginBottom = '6px';
+      d.innerHTML = `<strong>${escapeHtml(o.name)}</strong> — ₹${Number(o.price).toLocaleString()} <span style="opacity:0.85">[${escapeHtml(o.date)}]</span>`;
+      ordersList.appendChild(d);
+    });
+  }
+
+  function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  // initial render
+  renderAccount(); renderItems(); renderOrders();
+
+  /* -------------------------
+     Buttons & interactions
+     ------------------------- */
+  // Search with small clue -> google results (new tab)
+  document.getElementById('btn-clue').addEventListener('click', ()=>{
+    const clue = prompt('Enter your search clue:');
+    if(clue && clue.trim()){
+      const url = `https://www.google.com/search?q=${encodeURIComponent(clue.trim())}`;
+      window.open(url, '_blank');
+    }
+  });
+
+  // Search with photo -> uses Google search by image upload endpoint (opens new tab)
+  document.getElementById('btn-photo').addEventListener('click', ()=> {
+    // create a form and file input, post to Google's search-by-image upload endpoint
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.enctype = 'multipart/form-data';
+    form.action = 'https://www.google.com/searchbyimage/upload';
+    form.target = '_blank';
+
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.name = 'encoded_image';
+    fileInput.accept = 'image/*';
+    fileInput.style.display = 'none';
+
+    form.appendChild(fileInput);
+    document.body.appendChild(form);
+
+    fileInput.onchange = () => {
+      // add additional params required by Google endpoint
+      const hidden = document.createElement('input');
+      hidden.type = 'hidden';
+      hidden.name = 'image_content';
+      hidden.value = '';
+      form.appendChild(hidden);
+      // submit form -> opens new tab with google reverse image results (if allowed)
+      form.submit();
+      setTimeout(()=>{ form.remove(); }, 2000);
+    };
+
+    fileInput.click();
+  });
+
+  // GPT-5 button
+  document.getElementById('open-gpt').addEventListener('click', ()=> {
+    window.open('https://chat.openai.com/', '_blank');
+  });
+
+  /* -------------------------
+     Login logic (demo)
+     ------------------------- */
+  const loginBox = document.getElementById('loginBox');
+  document.getElementById('btn-login').addEventListener('click', ()=> { loginBox.classList.toggle('hidden'); });
+  document.getElementById('closeLogin').addEventListener('click', ()=> { loginBox.classList.add('hidden'); });
+
+  document.getElementById('btnDoLogin').addEventListener('click', ()=>{
+    const email = document.getElementById('loginEmail').value.trim();
+    const pwd = document.getElementById('loginPassword').value.trim();
+    if(!email || !pwd){ alert('Please enter email and password (demo).'); return; }
+    user = { email };
+    writeStorage(STORAGE_KEYS.USER, user);
+    renderAccount();
+    loginBox.classList.add('hidden');
+    alert('Logged in (demo): ' + email);
+    document.getElementById('btn-logout').style.display = 'inline-flex';
+  });
+  document.getElementById('btnGuest').addEventListener('click', ()=>{
+    user = null;
+    renderAccount();
+    loginBox.classList.add('hidden');
+    alert('Continuing as guest (no account).');
+  });
+
+  document.getElementById('btn-logout').addEventListener('click', ()=>{
+    user = null; localStorage.removeItem(STORAGE_KEYS.USER); renderAccount(); alert('Logged out (demo).');
+  });
+
+  /* -------------------------
+     Selling logic (local demo)
+     ------------------------- */
+  const sellBox = document.getElementById('sellBox');
+  document.getElementById('btn-sell').addEventListener('click', ()=> { sellBox.classList.toggle('hidden'); });
+  document.getElementById('closeSell').addEventListener('click', ()=> { sellBox.classList.add('hidden'); });
+
+  // preview image
+  const sellImage = document.getElementById('sellImage');
+  const preview = document.getElementById('preview');
+  sellImage.addEventListener('change', ()=>{
+    const f = sellImage.files[0];
+    preview.innerHTML = '';
+    if(!f) return;
+    const reader = new FileReader();
+    reader.onload = (e)=> {
+      const img = document.createElement('img'); img.src=e.target.result;
+      img.style.maxWidth='120px'; img.style.borderRadius='8px';
+      preview.appendChild(img);
+    };
+    reader.readAsDataURL(f);
+  });
+
+  document.getElementById('btnPostItem').addEventListener('click', async ()=>{
+    const name = document.getElementById('sellName').value.trim();
+    const price = Number(document.getElementById('sellPrice').value);
+    const acc = document.getElementById('sellAcc').value.trim() || 'ACCT-DEMO';
+    if(!name || !price){ alert('Please enter item name and price.'); return; }
+
+    // image -> to dataURL
+    let dataUrl = '';
+    const f = sellImage.files[0];
+    if(f){
+      try{
+        dataUrl = await readFileAsDataURL(f);
+      }catch(e){}
+    }
+
+    const newItem = {
+      id: idStr(),
+      name,
+      price: price,
+      img: dataUrl,
+      seller: user ? user.email : 'Guest Seller',
+      accountDemo: acc
+    };
+    items.push(newItem);
+    writeStorage(STORAGE_KEYS.ITEMS, items);
+    renderItems();
+    // clear form
+    document.getElementById('sellName').value=''; document.getElementById('sellPrice').value=''; document.getElementById('sellAcc').value=''; sellImage.value=''; preview.innerHTML='';
+    alert('Item posted to marketplace (demo).');
+    sellBox.classList.add('hidden');
+  });
+
+  function readFileAsDataURL(file){
+    return new Promise((res, rej)=>{
+      const r = new FileReader();
+      r.onload = ()=>res(r.result);
+      r.onerror = ()=>rej(new Error('file read error'));
+      r.readAsDataURL(file);
+    });
+  }
+
+  /* -------------------------
+     Buying logic (local)
+     ------------------------- */
+  function doBuy(itemId){
+    const it = items.find(x=>x.id === itemId);
+    if(!it){ alert('Item not found.'); return; }
+    // in real app you'd ask address/payment. For demo, we add to orders.
+    const buyer = user ? user.email : 'Guest';
+    const confirmMsg = `Buy "${it.name}" for ₹${it.price.toLocaleString()} as ${buyer}? (demo checkout)`;
+    if(!confirm(confirmMsg)) return;
+
+    const ord = { orderId: 'o'+Math.random().toString(36).slice(2,9), name: it.name, price: it.price, date: new Date().toLocaleString(), buyer };
+    orders.push(ord); writeStorage(STORAGE_KEYS.ORDERS, orders);
+    renderOrders();
+    alert('Order placed (demo). Check My Orders.');
+    // optionally remove item or leave it — we leave it so multiple can "buy" in demo
+  }
+
+  /* -------------------------
+     Helpers & initial load
+     ------------------------- */
+  // ensure items rendered
+  renderItems(); renderOrders();
+
+  // helper: keep UI reactive if storage changed from another tab (optional)
+  window.addEventListener('storage', (e)=> {
+    if(e.key === STORAGE_KEYS.ITEMS){ items = readStorage(STORAGE_KEYS.ITEMS, items); renderItems(); }
+    if(e.key === STORAGE_KEYS.ORDERS){ orders = readStorage(STORAGE_KEYS.ORDERS, orders); renderOrders(); }
+  });
+
+  // small UX: clicking outside login/sell closes them
+  document.addEventListener('click', (ev)=>{
+    const target = ev.target;
+    if(!loginBox.classList.contains('hidden') && !loginBox.contains(target) && !document.getElementById('btn-login').contains(target)){
+      // loginBox.classList.add('hidden');
+    }
+  });
+
+  /* -------------------------
+     End of script
+     ------------------------- */
+</script>
+</body>
+</html>
+
+
